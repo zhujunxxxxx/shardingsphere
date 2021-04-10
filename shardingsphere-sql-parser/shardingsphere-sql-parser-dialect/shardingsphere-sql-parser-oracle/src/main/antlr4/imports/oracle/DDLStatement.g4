@@ -240,7 +240,7 @@ tableAlias
     ;
 
 alterDefinitionClause
-    : (alterTableProperties | columnClauses | constraintClauses | alterExternalTable | alterTablePartition)?
+    : (alterTableProperties | columnClauses | constraintClauses | alterExternalTable | alterTablePartitioning)?
     ;
 
 alterTableProperties
@@ -920,30 +920,110 @@ alterSynonym
     : ALTER PUBLIC? SYNONYM (schemaName DOT_)? synonymName (COMPILE | EDITIONABLE | NONEDITIONABLE)
     ;
 
-alterTablePartition
-    : addTablePartition | dropTablePartition
+alterTablePartitioning
+    : modify_table_partition
+    | move_table_partition
+    | add_table_partition
+    | coalesce_table_partition
+    | drop_table_partition
+    ;
+// START
+modify_table_partition
+    : modify_range_partition
+    | modify_hash_partition
+    | modify_list_partition
     ;
 
-addTablePartition
-    : ADD (addRangePartitionClause | addListPartitionClause)
+modify_range_partition
+    : MODIFY partition_extended_name (partition_attributes | (add_range_subpartition | add_hash_subpartition | add_list_subpartition) | coalesce_table_subpartition
+    | alter_mapping_table_clause | REBUILD? UNUSABLE LOCAL INDEXES | read_only_clause | indexing_clause)
     ;
 
-addRangePartitionClause
-    : PARTITION partitionName? rangeValuesClause tablePartitionDescription
-    ((LP_? rangeSubpartitionDesc (COMMA_ rangeSubpartitionDesc)* | listSubpartitionDesc (COMMA_ listSubpartitionDesc)* | individualHashSubparts (COMMA_ individualHashSubparts)* RP_?)
-        | hashSubpartitionQuantity)?
+modify_hash_partition
+    :
     ;
 
-addListPartitionClause
-    : PARTITION partitionName? listValuesClause tablePartitionDescription
-    ((LP_? rangeSubpartitionDesc (COMMA_ rangeSubpartitionDesc)* | listSubpartitionDesc (COMMA_ listSubpartitionDesc)* | individualHashSubparts (COMMA_ individualHashSubparts)* RP_?)
-    | hashSubpartitionQuantity)?
+modify_list_partition
+    :
     ;
 
-dropTablePartition
-    : DROP partitionExtendedNames
+partition_extended_name
+    : (PARTITION partition)
+    | (PARTITION FOR LR_ partition_key_value (COMMA_ partition_key_value)* RP_)
     ;
 
-partitionExtendedNames
-    : (PARTITION | PARTITIONS) partition
+partition_key_value
+    : partition (COMMA_ partition)*
+    ;
+
+add_range_subpartition
+    : ADD range_subpartition_desc (COMMA_ range_subpartition_desc)* dependent_tables_clause? update_index_clauses?
+    ;
+
+dependent_tables_clause
+    : DEPENDENT TABLES LP_ tableName LP_ partition_spec (COMMA_ partition_spec)* RP_ (tableName LP_ partition_spec (COMMA_ partition_spec)* RP_)* RP_
+    ;
+
+add_hash_subpartition
+    :
+    ;
+
+add_list_subpartition
+    :
+    ;
+
+coalesce_table_subpartition
+    :
+    ;
+
+alter_mapping_table_clause
+    :
+    ;
+
+read_only_clause
+    :
+    ;
+
+indexing_clause
+    :
+    ;
+
+update_index_clauses
+    :
+    ;
+
+partition_spec
+    : PARTITION partition? tablePartitionDescription?
+    ;
+
+range_subpartition_desc
+    : SUBPARTITION subpartition? range_values_clause read_only_clause? indexing_clause? partitioning_storage_clause? external_part_subpart_data_props?
+    ;
+
+
+partition_attributes
+    : ((physical_attributes_clause | logging_clause | allocate_extent_clause | deallocate_unused_clause | shrink_clause)*)?
+      (OVERFLOW (physical_attributes_clause | logging_clause | allocate_extent_clause | deallocate_unused_clause)*)?
+      table_compression? inmemory_clause? // todo
+    ;
+
+move_table_partition
+    : MOVE partition_extended_name (MAPPING TABLE)? table_partition_description? filter_condition? update_index_clauses? parallel_clause? allow_disallow_clustering? ONLINE?
+    ;
+
+
+add_table_partition
+    : ADD ((PARTITION partition? add_range_partition_clause (COMMA_ PARTITION partition? add_range_partition_clause)*)
+        |  (PARTITION partition? add_list_partition_clause (COMMA_ PARTITION partition? add_list_partition_clause)*)
+        |  (PARTITION partition? add_system_partition_clause (COMMA_ PARTITION partition? add_system_partition_clause)*)
+        |  (PARTITION partition? add_hash_partition_clause (COMMA_ PARTITION partition? add_hash_partition_clause)*)
+        ) dependent_tables_clause?
+    ;
+
+coalesce_table_partition
+    : COALESCE PARTITION update_index_clauses? parallel_clause? allow_disallow_clustering?
+    ;
+
+drop_table_partition
+    : partition_extended_names (update_index_clauses parallel_clause?)?
     ;

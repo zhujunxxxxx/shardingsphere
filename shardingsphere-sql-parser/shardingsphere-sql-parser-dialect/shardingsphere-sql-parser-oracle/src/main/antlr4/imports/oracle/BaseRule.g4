@@ -179,6 +179,9 @@ partition
     : identifier
     ;
 
+subpartition
+    : identifier
+    ;
 type
     : identifier
     ;
@@ -485,4 +488,8 @@ matchNone
 
 hashSubpartitionQuantity
     : NUMBER
+    ;
+
+tablespace
+    : identifier
     ;
