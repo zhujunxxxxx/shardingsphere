@@ -493,3 +493,15 @@ hashSubpartitionQuantity
 tablespace
     : identifier
     ;
+
+index
+    : identifier
+    ;
+
+odciParameters
+    : identifier
+    ;
+
+fileName
+    : identifier
+    ;
