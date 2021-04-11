@@ -182,6 +182,7 @@ partition
 subpartition
     : identifier
     ;
+
 type
     : identifier
     ;
