@@ -240,7 +240,11 @@ tableAlias
     ;
 
 alterDefinitionClause
-    : (alterTableProperties | columnClauses | constraintClauses | alterExternalTable | alterTablePartitioning)?
+    : (alterTableProperties
+    | columnClauses
+    | constraintClauses
+    | alterTablePartitioning ((DEFERRED| IMMEDIATE) INVALIDATION)?
+    | alterExternalTable)?
     ;
 
 alterTableProperties

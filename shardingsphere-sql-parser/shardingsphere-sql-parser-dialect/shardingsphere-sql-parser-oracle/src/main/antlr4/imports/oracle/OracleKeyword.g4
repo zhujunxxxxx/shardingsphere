@@ -903,6 +903,10 @@ PARALLEL
     : P A R A L L E L
     ;
 
+NOPARALLEL
+    : N O P A R A L L E L
+    ;
+
 LOG
     : L O G
     ;
